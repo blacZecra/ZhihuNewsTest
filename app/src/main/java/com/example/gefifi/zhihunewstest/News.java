@@ -23,6 +23,8 @@ public class News {
     private String date;
     private List<StoryBean> stories;
 
+    private List<StoryBean> top_stories;
+
     public String getDate() {
         return date;
     }
@@ -37,6 +39,14 @@ public class News {
 
     public void setStories(List<StoryBean> stories) {
         this.stories = stories;
+    }
+
+    public List<StoryBean> getTop_stories() {
+        return top_stories;
+    }
+
+    public void setTop_stories(List<StoryBean> top_stories) {
+        this.top_stories = top_stories;
     }
 
     public void show(){

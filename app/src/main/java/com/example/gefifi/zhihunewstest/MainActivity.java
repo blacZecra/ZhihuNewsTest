@@ -1,8 +1,14 @@
 package com.example.gefifi.zhihunewstest;
 
+import android.os.Handler;
+import android.os.Message;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import java.util.List;
 
 import butterknife.Bind;
 import retrofit2.Call;
@@ -14,25 +20,38 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
 
-    @Bind(R.id.text_content)
-    TextView contentText;
+    @Bind(R.id.news_listView)
+    ListView newsListView;
 
-    @Bind(R.id.button_get)
-    Button getButton;
+    NewsAdapter newsAdapter;
+
+//    @Bind(R.id.button_get)
+//    Button getButton;
 
     Retrofit retrofit;
 //    Retrofit retrofitNetease;
     GetRequest_interface request;
 //    GetRequest_interface requestNetease;
 
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case 0:
+                    newsListView.setAdapter(newsAdapter);
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void initData() {
-
+        newsRequest();
     }
 
     @Override
     protected void initListener() {
-        getButton.setOnClickListener(this);
+//        getButton.setOnClickListener(this);
     }
 
     @Override
@@ -43,12 +62,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.button_get:
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.login:
+                Toast.makeText(MainActivity.this, "登陆", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.refresh:
                 newsRequest();
                 break;
             default:
                 break;
         }
+        return true;
     }
 
     private void newsRequest() {
@@ -65,6 +102,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             @Override
             public void onResponse(Call<News> call, Response<News> response) {
                 response.body().show();
+                Toast.makeText(MainActivity.this, response.body().getStories().get(0).getTitle(), Toast.LENGTH_SHORT).show();
+                List<News.StoryBean> newsList = response.body().getStories();
+                newsList.addAll(response.body().getTop_stories());
+                newsAdapter = new NewsAdapter(MainActivity.this, R.layout.news_item, newsList);
+                Message message = new Message();
+                message.what = 0;
+                handler.sendMessage(message);
             }
 
             @Override
