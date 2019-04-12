@@ -1,10 +1,13 @@
 package com.example.gefifi.zhihunewstest;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -19,11 +22,13 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
+    public static final String webAdd = "https://news-at.zhihu.com/api/4/news/";
 
     @Bind(R.id.news_listView)
     ListView newsListView;
 
     NewsAdapter newsAdapter;
+    List<News.StoryBean> newsList;
 
 //    @Bind(R.id.button_get)
 //    Button getButton;
@@ -39,10 +44,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             switch (msg.what){
                 case 0:
                     newsListView.setAdapter(newsAdapter);
+                    newsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                            News.StoryBean storyBean = newsList.get(i);
+                            Toast.makeText(MainActivity.this, storyBean.getId(), Toast.LENGTH_SHORT).show();
+                            toWeb(storyBean);
+                        }
+                    });
                     break;
             }
         }
     };
+
+    private void toWeb(News.StoryBean storyBean) {
+        //https://news-at.zhihu.com/api/4/news/3892357
+        String id = storyBean.getId();
+        String storyURL = webAdd + id;
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(storyURL));
+        startActivity(intent);
+    }
 
     @Override
     protected void initData() {
@@ -103,7 +125,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             public void onResponse(Call<News> call, Response<News> response) {
                 response.body().show();
                 Toast.makeText(MainActivity.this, response.body().getStories().get(0).getTitle(), Toast.LENGTH_SHORT).show();
-                List<News.StoryBean> newsList = response.body().getStories();
+                newsList = response.body().getStories();
                 newsList.addAll(response.body().getTop_stories());
                 newsAdapter = new NewsAdapter(MainActivity.this, R.layout.news_item, newsList);
                 Message message = new Message();
