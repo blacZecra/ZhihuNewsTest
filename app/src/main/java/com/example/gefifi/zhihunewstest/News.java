@@ -55,10 +55,19 @@ public class News {
 
     public static class StoryBean {
         List<String> images;
+        String image;
         String type;
         String id;
         String ga_prefix;
         String title;
+
+        public String getImage() {
+            return image;
+        }
+
+        public void setImage(String image) {
+            this.image = image;
+        }
 
         public List<String> getImages() {
             return images;
